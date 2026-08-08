@@ -1,0 +1,6 @@
+{
+  "name": "AI Architect Challenge",
+  "description": "Videojuego competitivo para optimizar modelos de IA open-source con mentores de la industria de la IA.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
