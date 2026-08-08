@@ -26,6 +26,7 @@ import confetti from 'canvas-confetti';
 import { MentorCharacter, Language } from '../types';
 import { CHARACTERS } from '../data/characters';
 import { getLeaderAvatarUrl, AvatarStyle } from '../utils/avatars';
+import { gameAudioEngine, playSoundEffect } from '../utils/gameAudio';
 import { LeaderAvatar } from './LeaderAvatar';
 
 interface IntroGameCoverProps {
@@ -37,49 +38,6 @@ interface IntroGameCoverProps {
   username: string;
   onConfirmSetup: (mentorId: string, modelId: string, username: string) => void;
 }
-
-// Simple Web Audio API Sound Effects Synthesizer for Game Feel
-const playSoundEffect = (type: 'hover' | 'click' | 'launch') => {
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    const now = ctx.currentTime;
-
-    if (type === 'hover') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-      osc.start(now);
-      osc.stop(now + 0.05);
-    } else if (type === 'click') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.exponentialRampToValueAtTime(1040, now + 0.08);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.start(now);
-      osc.stop(now + 0.08);
-    } else if (type === 'launch') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.exponentialRampToValueAtTime(1760, now + 0.3);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      osc.start(now);
-      osc.stop(now + 0.3);
-    }
-  } catch (e) {
-    // Audio context user gesture or unsupported
-  }
-};
 
 export const IntroGameCover: React.FC<IntroGameCoverProps> = ({
   isOpen,
@@ -95,8 +53,26 @@ export const IntroGameCover: React.FC<IntroGameCoverProps> = ({
   const [step, setStep] = useState<'story' | 'character' | 'model'>('story');
   const [tempUsername, setTempUsername] = useState<string>(initialUsername || 'Arquitecto Alfa');
   const [tempMentorId, setTempMentorId] = useState<string>(selectedMentorId || CHARACTERS[0].id);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(!gameAudioEngine.isMuted());
   const [artMode, setArtMode] = useState<AvatarStyle>('comic');
+
+  // Sync background music track according to game cover step
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (!soundEnabled) {
+      gameAudioEngine.setTrack('off');
+      return;
+    }
+
+    if (step === 'story') {
+      gameAudioEngine.setTrack('story');
+    } else if (step === 'character') {
+      gameAudioEngine.setTrack('character');
+    } else if (step === 'model') {
+      gameAudioEngine.setTrack('model');
+    }
+  }, [step, isOpen, soundEnabled]);
 
   const currentMentor = CHARACTERS.find((c) => c.id === tempMentorId) || CHARACTERS[0];
   const [tempModelId, setTempModelId] = useState<string>(
@@ -280,13 +256,35 @@ export const IntroGameCover: React.FC<IntroGameCoverProps> = ({
             </button>
           </div>
 
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2 rounded-lg bg-[#12151E] border border-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer"
-            title={soundEnabled ? 'Sonido Activado' : 'Sonido Silenciado'}
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
-          </button>
+          {/* Soundtrack Indicator & Mute Toggle */}
+          <div className="flex items-center space-x-2 bg-[#12151E] px-2.5 py-1 rounded-xl border border-cyan-500/30">
+            <Radio className={`w-3.5 h-3.5 ${soundEnabled ? 'text-cyan-400 animate-pulse' : 'text-slate-500'}`} />
+            <div className="hidden lg:flex flex-col text-left">
+              <span className="text-[9px] font-mono font-bold text-cyan-400 uppercase leading-none">
+                {step === 'story' && '🎵 PISTA 1: PRELUDIO (PORTADA)'}
+                {step === 'character' && '🎵 PISTA 2: RECLUTAMIENTO (MENTOR)'}
+                {step === 'model' && '🎵 PISTA 3: DESAFÍO AGI (MODELO)'}
+              </span>
+              <span className="text-[8px] text-slate-400 font-mono">BGM SINTETIZADO GAME 8-BIT</span>
+            </div>
+            {soundEnabled && (
+              <div className="flex items-end space-x-0.5 h-3 px-1">
+                <span className="w-0.5 h-3 bg-cyan-400 animate-pulse"></span>
+                <span className="w-0.5 h-2 bg-cyan-400 animate-pulse delay-75"></span>
+                <span className="w-0.5 h-3.5 bg-cyan-400 animate-pulse delay-150"></span>
+              </div>
+            )}
+            <button
+              onClick={() => {
+                const isMuted = gameAudioEngine.toggleMute();
+                setSoundEnabled(!isMuted);
+              }}
+              className="p-1.5 rounded-lg bg-slate-900 border border-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer ml-1"
+              title={soundEnabled ? 'Silenciar Música' : 'Activar Música de Videojuego'}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            </button>
+          </div>
 
           <button
             onClick={onClose}

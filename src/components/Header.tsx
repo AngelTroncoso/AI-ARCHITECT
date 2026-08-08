@@ -1,9 +1,10 @@
 import React from 'react';
 import { UserProgress, Language, MentorCharacter, HFModel } from '../types';
 import { TRANSLATIONS } from '../data/i18n';
-import { Award, Flame, Globe, Trophy, Zap, Code2, Sparkles, Video, UserCheck } from 'lucide-react';
+import { Award, Flame, Globe, Trophy, Zap, Code2, Sparkles, Video, UserCheck, Volume2, VolumeX, Radio, Music } from 'lucide-react';
 import { getLeaderAvatarUrl } from '../utils/avatars';
 import { LeaderAvatar } from './LeaderAvatar';
+import { gameAudioEngine, BgmTrackId } from '../utils/gameAudio';
 
 interface HeaderProps {
   progress: UserProgress;
@@ -30,6 +31,27 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectLanguage,
   onSelectLevel,
 }) => {
+  const [bgmMuted, setBgmMuted] = React.useState(gameAudioEngine.isMuted());
+  const [activeBgmTrack, setActiveBgmTrack] = React.useState<BgmTrackId>(gameAudioEngine.getCurrentTrack() === 'off' ? 'model' : gameAudioEngine.getCurrentTrack());
+
+  const handleToggleBgm = () => {
+    const isMuted = gameAudioEngine.toggleMute();
+    setBgmMuted(isMuted);
+    if (!isMuted && gameAudioEngine.getCurrentTrack() === 'off') {
+      gameAudioEngine.setTrack('model');
+      setActiveBgmTrack('model');
+    }
+  };
+
+  const handleCycleTrack = () => {
+    if (bgmMuted) {
+      gameAudioEngine.toggleMute();
+      setBgmMuted(false);
+    }
+    const nextTrack: BgmTrackId = activeBgmTrack === 'story' ? 'character' : activeBgmTrack === 'character' ? 'model' : 'story';
+    gameAudioEngine.setTrack(nextTrack);
+    setActiveBgmTrack(nextTrack);
+  };
   const t = TRANSLATIONS[progress.activeLanguage];
 
   return (
@@ -144,6 +166,29 @@ export const Header: React.FC<HeaderProps> = ({
             <Code2 className="w-4 h-4 text-indigo-400" />
             <span className="font-mono text-cyan-300">{activeModel.name}</span>
           </button>
+
+          {/* BGM Video Game Music Control */}
+          <div className="flex items-center space-x-1 bg-[#12151E] p-1 rounded-lg border border-cyan-500/30">
+            <button
+              onClick={handleCycleTrack}
+              className="flex items-center space-x-1.5 px-2 py-1 bg-slate-900 hover:bg-slate-800 rounded text-[10px] font-mono font-bold text-cyan-300 transition-colors cursor-pointer"
+              title="Cambiar Pista de Música (1: Preludio | 2: Mentores | 3: AGI Challenge)"
+            >
+              <Music className={`w-3.5 h-3.5 ${!bgmMuted ? 'text-cyan-400 animate-pulse' : 'text-slate-500'}`} />
+              <span className="hidden xl:inline">
+                {activeBgmTrack === 'story' && 'Pista I'}
+                {activeBgmTrack === 'character' && 'Pista II'}
+                {activeBgmTrack === 'model' && 'Pista III'}
+              </span>
+            </button>
+            <button
+              onClick={handleToggleBgm}
+              className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title={bgmMuted ? 'Activar Música' : 'Silenciar Música'}
+            >
+              {!bgmMuted ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
+            </button>
+          </div>
 
           {/* Video Lesson Button */}
           <button
