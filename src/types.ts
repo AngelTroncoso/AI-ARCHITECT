@@ -112,6 +112,33 @@ export interface UserProgress {
   activeLanguage: Language;
   selectedProgLang: ProgrammingLanguage;
   savedCode: Record<number, Record<ProgrammingLanguage, string>>;
+  unlockedSkills?: string[];
+  unlockedAchievements?: string[];
+  themeMode?: 'cyberpunk' | 'crt' | 'matrix' | 'clean';
+  bossHp?: number;
+}
+
+export interface SkillTreeNode {
+  id: string;
+  name: Record<Language, string>;
+  category: 'cuantizacion' | 'atencion' | 'memoria' | 'compilacion';
+  icon: string;
+  xpCost: number;
+  prerequisites: string[];
+  description: Record<Language, string>;
+  perk: Record<Language, string>;
+  buffLatencyPct: number;
+  buffMemoryPct: number;
+}
+
+export interface AchievementItem {
+  id: string;
+  title: Record<Language, string>;
+  description: Record<Language, string>;
+  icon: string;
+  category: 'gamification' | 'llm' | 'ux';
+  xpReward: number;
+  isUnlocked?: boolean;
 }
 
 export interface LeaderboardEntry {

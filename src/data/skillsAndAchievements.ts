@@ -1,0 +1,223 @@
+import { SkillTreeNode, AchievementItem } from '../types';
+
+export const SKILL_TREE_NODES: SkillTreeNode[] = [
+  {
+    id: 'int8_dynamic',
+    name: {
+      es: 'Cuantización Dinámica INT8',
+      en: 'Dynamic INT8 Quantization',
+      zh: '动态 INT8 量化',
+    },
+    category: 'cuantizacion',
+    icon: 'Cpu',
+    xpCost: 200,
+    prerequisites: [],
+    description: {
+      es: 'Convierte los pesos de los tensores de FP32 a enteros de 8 bits reduciendo la huella de memoria en un 70%.',
+      en: 'Converts tensor weights from FP32 to 8-bit integers reducing memory footprint by 70%.',
+      zh: '将张量权重从 FP32 转换为 8 位整数，内存占用减少 70%。',
+    },
+    perk: {
+      es: '-30% Latencia de Inferencia',
+      en: '-30% Inference Latency',
+      zh: '-30% 推理延迟',
+    },
+    buffLatencyPct: 30,
+    buffMemoryPct: 60,
+  },
+  {
+    id: 'fp8_e4m3',
+    name: {
+      es: 'Formato FP8 E4M3/E5M2',
+      en: 'FP8 E4M3 Precision',
+      zh: 'FP8 精度格式',
+    },
+    category: 'cuantizacion',
+    icon: 'Zap',
+    xpCost: 450,
+    prerequisites: ['int8_dynamic'],
+    description: {
+      es: 'Aprovecha los Tensor Cores FP8 de nuevas GPUs NVIDIA H100 para multiplicar por 2x el rendimiento en matrices densas.',
+      en: 'Leverages FP8 Tensor Cores in NVIDIA H100 GPUs to double throughput on dense matrix operations.',
+      zh: '利用 NVIDIA H100 GPU 中的 FP8 张量核心，将密集矩阵的吞吐量提高 2 倍。',
+    },
+    perk: {
+      es: '+50% Velocidad de Cómputo (Tokens/s)',
+      en: '+50% Compute Speed (Tokens/s)',
+      zh: '+50% 计算速度 (Tokens/s)',
+    },
+    buffLatencyPct: 20,
+    buffMemoryPct: 40,
+  },
+  {
+    id: 'flash_attention_2',
+    name: {
+      es: 'FlashAttention-2 Kernel',
+      en: 'FlashAttention-2 Kernel',
+      zh: 'FlashAttention-2 核心',
+    },
+    category: 'atencion',
+    icon: 'Sparkles',
+    xpCost: 350,
+    prerequisites: [],
+    description: {
+      es: 'Optimiza los accesos a SRAM mediante tiled attention sin materializar la matriz de atención O(N²) en HBM.',
+      en: 'Optimizes SRAM access via tiled attention without materializing the O(N²) attention matrix in HBM.',
+      zh: '通过平铺注意力优化 SRAM 访问，而无需在 HBM 中实例化 O(N²) 注意力矩阵。',
+    },
+    perk: {
+      es: '-45% Memoria VRAM en Contextos Largos',
+      en: '-45% VRAM Memory in Long Contexts',
+      zh: '-45% 长上下文 VRAM 内存',
+    },
+    buffLatencyPct: 25,
+    buffMemoryPct: 45,
+  },
+  {
+    id: 'kv_cache_paging',
+    name: {
+      es: 'PagedAttention & KV-Cache',
+      en: 'PagedAttention & KV-Cache',
+      zh: 'PagedAttention 与 KV 缓存',
+    },
+    category: 'memoria',
+    icon: 'Database',
+    xpCost: 500,
+    prerequisites: ['flash_attention_2'],
+    description: {
+      es: 'Asigna memoria de claves y valores como páginas virtuales evitando la fragmentación externa en decodificación.',
+      en: 'Allocates key-value memory as virtual pages eliminating external fragmentation during token generation.',
+      zh: '将键值内存分配为虚拟页，消除 Token 生成期间的外部碎片。',
+    },
+    perk: {
+      es: 'Servimiento Concurrent Multi-User x4',
+      en: '4x Concurrent Multi-User Serving',
+      zh: '4 倍并发多用户服务',
+    },
+    buffLatencyPct: 35,
+    buffMemoryPct: 50,
+  },
+  {
+    id: 'structural_pruning',
+    name: {
+      es: 'Poda Estructural de Cabezas',
+      en: 'Structural Head Pruning',
+      zh: '结构化注意力头剪枝',
+    },
+    category: 'compilacion',
+    icon: 'Scissors',
+    xpCost: 300,
+    prerequisites: ['int8_dynamic'],
+    description: {
+      es: 'Elimina cabezas de atención redundantes mediante análisis de gradiente y sensibilidad con pérdida mínima de exactitud.',
+      en: 'Removes redundant attention heads through gradient sensitivity analysis with minimal accuracy drop.',
+      zh: '通过梯度敏感性分析移除冗余注意力头，同时极小化精度损失。',
+    },
+    perk: {
+      es: '-25% Parámetros Activos',
+      en: '-25% Active Parameters',
+      zh: '-25% 活跃参数',
+    },
+    buffLatencyPct: 20,
+    buffMemoryPct: 25,
+  },
+  {
+    id: 'tensorrt_llm_compile',
+    name: {
+      es: 'Compilador TensorRT-LLM',
+      en: 'TensorRT-LLM Compiler',
+      zh: 'TensorRT-LLM 编译器',
+    },
+    category: 'compilacion',
+    icon: 'Terminal',
+    xpCost: 800,
+    prerequisites: ['fp8_e4m3', 'kv_cache_paging'],
+    description: {
+      es: 'Fusiona operadores PyTorch en un grafo estático nativo de CUDA logrando la máxima aceleración AGI posible.',
+      en: 'Fuses PyTorch operators into a static CUDA native graph achieving maximum possible AGI acceleration.',
+      zh: '将 PyTorch 算子融合为原生 CUDA 静态图，实现最高 AGI 加速。',
+    },
+    perk: {
+      es: 'Aceleración AGI Suprema (Aceleración 3.5x)',
+      en: 'Supreme AGI Boost (3.5x Speedup)',
+      zh: '终极 AGI 加速 (3.5x 加速)',
+    },
+    buffLatencyPct: 50,
+    buffMemoryPct: 40,
+  },
+];
+
+export const ACHIEVEMENTS_LIST: AchievementItem[] = [
+  {
+    id: 'first_quant',
+    title: { es: 'Rompedor de Latencia', en: 'Latency Breaker', zh: '延迟突破者' },
+    description: {
+      es: 'Aplica tu primera cuantización en un modelo de Hugging Face.',
+      en: 'Apply your first quantization on a Hugging Face model.',
+      zh: '在 Hugging Face 模型上应用你的第一次量化。',
+    },
+    icon: 'Zap',
+    category: 'llm',
+    xpReward: 150,
+  },
+  {
+    id: 'boss_slayer',
+    title: { es: 'Cazador del Goliath AGI', en: 'AGI Goliath Slayer', zh: 'AGI 巨人猎手' },
+    description: {
+      es: 'Derrota al Boss "Goliath 100B" en el Raid de Latencia.',
+      en: 'Defeat the "Goliath 100B" Boss in the Latency Raid.',
+      zh: '在延迟 Raid 中击败 "Goliath 100B" Boss。',
+    },
+    icon: 'Swords',
+    category: 'gamification',
+    xpReward: 500,
+  },
+  {
+    id: 'skill_tree_master',
+    title: { es: 'Erudito de la Eficiencia', en: 'Scholar of Efficiency', zh: '效率学者' },
+    description: {
+      es: 'Desbloquea al menos 3 nodos del Árbol de Habilidades.',
+      en: 'Unlock at least 3 nodes in the Skill Tree.',
+      zh: '解锁技能树中的至少 3 个节点。',
+    },
+    icon: 'GitFork',
+    category: 'gamification',
+    xpReward: 300,
+  },
+  {
+    id: 'multimodal_master',
+    title: { es: 'Comandante Multimodal', en: 'Multimodal Commander', zh: '多模态指挥官' },
+    description: {
+      es: 'Utiliza el agente de voz, imagen o código con tu Mentor IA.',
+      en: 'Use voice, image, or code agent with your AI Mentor.',
+      zh: '与 AI 导师使用语音、图像或代码代理。',
+    },
+    icon: 'Bot',
+    category: 'ux',
+    xpReward: 200,
+  },
+  {
+    id: 'lora_expert',
+    title: { es: 'Maestro de Fine-Tuning LoRA', en: 'LoRA Fine-Tuning Master', zh: 'LoRA 微调大师' },
+    description: {
+      es: 'Simula una adaptación de bajo rango (Rank r=8) con pérdida reducida.',
+      en: 'Simulate a Low-Rank Adaptation (Rank r=8) with minimal loss.',
+      zh: '模拟具有极低损失的 Low-Rank 适配 (Rank r=8)。',
+    },
+    icon: 'Sliders',
+    category: 'llm',
+    xpReward: 250,
+  },
+  {
+    id: 'arena_champion',
+    title: { es: 'Campeón de la Arena LLM', en: 'LLM Arena Champion', zh: 'LLM 竞技场冠军' },
+    description: {
+      es: 'Compara 3 modelos abiertamente en la Arena de Benchmarking.',
+      en: 'Compare 3 open models in the Benchmarking Arena.',
+      zh: '在基准竞技场中公开比较 3 个模型。',
+    },
+    icon: 'Trophy',
+    category: 'llm',
+    xpReward: 200,
+  },
+];

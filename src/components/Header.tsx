@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserProgress, Language, MentorCharacter, HFModel } from '../types';
 import { TRANSLATIONS } from '../data/i18n';
-import { Award, Flame, Globe, Trophy, Zap, Code2, Sparkles, Video, UserCheck, Volume2, VolumeX, Radio, Music } from 'lucide-react';
+import { Award, Flame, Globe, Trophy, Zap, Code2, Sparkles, Video, UserCheck, Volume2, VolumeX, Radio, Music, GitFork, Swords, Sliders } from 'lucide-react';
 import { getLeaderAvatarUrl } from '../utils/avatars';
 import { LeaderAvatar } from './LeaderAvatar';
 import { gameAudioEngine, BgmTrackId } from '../utils/gameAudio';
@@ -15,6 +15,9 @@ interface HeaderProps {
   onOpenLeaderboard: () => void;
   onOpenVideoInsight: () => void;
   onOpenIntroStory: () => void;
+  onOpenSkillTree?: () => void;
+  onOpenBossRaid?: () => void;
+  onOpenRoadmapHub?: () => void;
   onSelectLanguage: (lang: Language) => void;
   onSelectLevel: (levelId: number) => void;
 }
@@ -28,6 +31,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenLeaderboard,
   onOpenVideoInsight,
   onOpenIntroStory,
+  onOpenSkillTree,
+  onOpenBossRaid,
+  onOpenRoadmapHub,
   onSelectLanguage,
   onSelectLevel,
 }) => {
@@ -166,6 +172,42 @@ export const Header: React.FC<HeaderProps> = ({
             <Code2 className="w-4 h-4 text-indigo-400" />
             <span className="font-mono text-cyan-300">{activeModel.name}</span>
           </button>
+
+          {/* Skill Tree Button */}
+          {onOpenSkillTree && (
+            <button
+              onClick={onOpenSkillTree}
+              className="flex items-center space-x-1 bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer"
+              title="Árbol de Habilidades AGI"
+            >
+              <GitFork className="w-4 h-4 text-cyan-400" />
+              <span className="hidden xl:inline">Skill Tree</span>
+            </button>
+          )}
+
+          {/* Boss Raid Button */}
+          {onOpenBossRaid && (
+            <button
+              onClick={onOpenBossRaid}
+              className="flex items-center space-x-1 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-500/40 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer"
+              title="Boss Raid vs Goliath 100B"
+            >
+              <Swords className="w-4 h-4 text-rose-400 animate-pulse" />
+              <span className="hidden xl:inline">Boss Raid</span>
+            </button>
+          )}
+
+          {/* Roadmap 21 Improvements Hub Button */}
+          {onOpenRoadmapHub && (
+            <button
+              onClick={onOpenRoadmapHub}
+              className="flex items-center space-x-1 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all shadow-md cursor-pointer"
+              title="Plan Maestro de 21 Mejoras"
+            >
+              <Sparkles className="w-4 h-4 text-amber-200" />
+              <span className="hidden lg:inline">21 Mejoras</span>
+            </button>
+          )}
 
           {/* BGM Video Game Music Control */}
           <div className="flex items-center space-x-1 bg-[#12151E] p-1 rounded-lg border border-cyan-500/30">

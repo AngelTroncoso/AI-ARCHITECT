@@ -21,6 +21,14 @@ import { ModelSelector } from './components/ModelSelector';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { VideoInsightModal } from './components/VideoInsightModal';
 import { IntroGameCover } from './components/IntroGameCover';
+import { SkillTreeModal } from './components/SkillTreeModal';
+import { BossRaidModal } from './components/BossRaidModal';
+import { QuantizationVisualizerModal } from './components/QuantizationVisualizerModal';
+import { ModelArenaModal } from './components/ModelArenaModal';
+import { LoRAPlaygroundModal } from './components/LoRAPlaygroundModal';
+import { AchievementsModal } from './components/AchievementsModal';
+import { RoadmapHubModal } from './components/RoadmapHubModal';
+import { GpuMonitorHud } from './components/GpuMonitorHud';
 
 export default function App() {
   // Initial State Setup
@@ -75,6 +83,40 @@ export default function App() {
   const [showModelModal, setShowModelModal] = useState<boolean>(false);
   const [showLeaderboardModal, setShowLeaderboardModal] = useState<boolean>(false);
   const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
+  const [showSkillTreeModal, setShowSkillTreeModal] = useState<boolean>(false);
+  const [showBossRaidModal, setShowBossRaidModal] = useState<boolean>(false);
+  const [showQuantizationModal, setShowQuantizationModal] = useState<boolean>(false);
+  const [showModelArenaModal, setShowModelArenaModal] = useState<boolean>(false);
+  const [showLoRAModal, setShowLoRAModal] = useState<boolean>(false);
+  const [showAchievementsModal, setShowAchievementsModal] = useState<boolean>(false);
+  const [showRoadmapHubModal, setShowRoadmapHubModal] = useState<boolean>(false);
+
+  // Skill Tree Unlock Handler
+  const handleUnlockSkill = (skillId: string, cost: number) => {
+    setProgress((prev) => {
+      const currentUnlocked = prev.unlockedSkills || [];
+      if (currentUnlocked.includes(skillId) || prev.xp < cost) return prev;
+      confetti({ particleCount: 50, spread: 60 });
+      return {
+        ...prev,
+        xp: prev.xp - cost,
+        unlockedSkills: [...currentUnlocked, skillId],
+      };
+    });
+  };
+
+  // Boss Defeat Reward Handler
+  const handleDefeatBoss = (rewardXp: number) => {
+    setProgress((prev) => {
+      const currentBadges = prev.badges || [];
+      return {
+        ...prev,
+        xp: prev.xp + rewardXp,
+        bossHp: 0,
+        badges: currentBadges.includes('Goliath Slayer') ? currentBadges : [...currentBadges, 'Goliath Slayer'],
+      };
+    });
+  };
 
   const [mentorReaction, setMentorReaction] = useState<'happy' | 'thinking' | 'celebrating' | 'alert'>('happy');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -263,9 +305,15 @@ export default function App() {
         onOpenLeaderboard={() => setShowLeaderboardModal(true)}
         onOpenVideoInsight={() => setShowVideoModal(true)}
         onOpenIntroStory={() => setShowIntroModal(true)}
+        onOpenSkillTree={() => setShowSkillTreeModal(true)}
+        onOpenBossRaid={() => setShowBossRaidModal(true)}
+        onOpenRoadmapHub={() => setShowRoadmapHubModal(true)}
         onSelectLanguage={(lang) => setProgress((p) => ({ ...p, activeLanguage: lang }))}
         onSelectLevel={(lvl) => setProgress((p) => ({ ...p, currentChallengeId: lvl }))}
       />
+
+      {/* GPU Hardware Monitor HUD */}
+      <GpuMonitorHud />
 
       {/* Main Dual Split-Screen Interface */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-130px)] min-h-[650px]">
@@ -352,6 +400,56 @@ export default function App() {
           onClose={() => setShowVideoModal(false)}
         />
       )}
+
+      {/* Expansion Modals */}
+      <SkillTreeModal
+        isOpen={showSkillTreeModal}
+        onClose={() => setShowSkillTreeModal(false)}
+        progress={progress}
+        onUnlockSkill={handleUnlockSkill}
+      />
+
+      <BossRaidModal
+        isOpen={showBossRaidModal}
+        onClose={() => setShowBossRaidModal(false)}
+        progress={progress}
+        onDefeatBossReward={handleDefeatBoss}
+      />
+
+      <QuantizationVisualizerModal
+        isOpen={showQuantizationModal}
+        onClose={() => setShowQuantizationModal(false)}
+        userLang={progress.activeLanguage}
+      />
+
+      <ModelArenaModal
+        isOpen={showModelArenaModal}
+        onClose={() => setShowModelArenaModal(false)}
+        userLang={progress.activeLanguage}
+      />
+
+      <LoRAPlaygroundModal
+        isOpen={showLoRAModal}
+        onClose={() => setShowLoRAModal(false)}
+        userLang={progress.activeLanguage}
+      />
+
+      <AchievementsModal
+        isOpen={showAchievementsModal}
+        onClose={() => setShowAchievementsModal(false)}
+        progress={progress}
+      />
+
+      <RoadmapHubModal
+        isOpen={showRoadmapHubModal}
+        onClose={() => setShowRoadmapHubModal(false)}
+        onOpenSkillTree={() => setShowSkillTreeModal(true)}
+        onOpenBossRaid={() => setShowBossRaidModal(true)}
+        onOpenQuantization={() => setShowQuantizationModal(true)}
+        onOpenModelArena={() => setShowModelArenaModal(true)}
+        onOpenLoRA={() => setShowLoRAModal(true)}
+        onOpenAchievements={() => setShowAchievementsModal(true)}
+      />
 
       {/* Intro Portada Video Game Full-Screen Opening Cover */}
       <IntroGameCover
