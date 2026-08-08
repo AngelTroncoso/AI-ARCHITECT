@@ -1,16 +1,20 @@
-// Web Audio API Video Game Soundtrack Synthesizer
-// Generates 3 distinct, subtle, motivational video game background tracks in real-time.
+// Web Audio API Video Game Soundtrack & Tech-HipHop Synthesizer
+// Inspired by Silicon Valley (HBO) Tech-Rap Beats & Retro Chiptunes
+// Generates dynamic, punchy, motivational background tracks in real-time.
 
 export type BgmTrackId = 'story' | 'character' | 'model' | 'off';
+export type BgmStyle = 'silicon_valley' | 'chiptune';
 
 class GameAudioEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private currentTrack: BgmTrackId = 'off';
+  private currentStyle: BgmStyle = 'silicon_valley'; // Silicon Valley Tech-Rap Beat by default!
   private isMutedState: boolean = false;
-  private volumeLevel: number = 0.22; // subtle default volume
+  private volumeLevel: number = 0.25; // balanced default volume
   private timerId: number | null = null;
   private currentNoteIndex: number = 0;
+  private noiseBuffer: AudioBuffer | null = null;
 
   // Initialize Web Audio Context lazily on user gesture
   private initContext() {
@@ -21,6 +25,14 @@ class GameAudioEngine {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(this.isMutedState ? 0 : this.volumeLevel, this.ctx.currentTime);
       this.masterGain.connect(this.ctx.destination);
+
+      // Create noise buffer for Hi-Hats & Snares
+      const bufferSize = this.ctx.sampleRate * 0.5;
+      this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = this.noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
     }
     if (this.ctx.state === 'suspended') {
       this.ctx.resume();
@@ -32,87 +44,295 @@ class GameAudioEngine {
     return 440 * Math.pow(2, (note - 69) / 12);
   }
 
-  // Track 1: Story / Portada - "Preludio Espacial AGI"
-  // Atmospheric, mysterious, gentle motivational chiptune-pad arpeggios in C Minor
-  private playStoryNote(step: number, time: number) {
+  // Percussion & Sub-Bass Synthesizers for Underground Silicon Valley Rap Beats
+  private play808Kick(time: number, pitch = 130, decay = 0.55) {
     if (!this.ctx || !this.masterGain) return;
-
-    // 16-step sequence (C Minor / Eb Major)
-    // C3, G3, C4, Eb4, G4, Bb4, C5, Eb5 ...
-    const melody = [48, 55, 60, 63, 67, 70, 72, 75, 48, 55, 60, 63, 67, 70, 72, 67];
-    const bass = [36, 36, 44, 44, 41, 41, 43, 43, 36, 36, 44, 44, 41, 41, 43, 43];
-
-    const note = melody[step % melody.length];
-    const bassNote = bass[step % bass.length];
-
-    // Arp Synth
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    const filter = this.ctx.createBiquadFilter();
 
+    // Deep punchy 808 kick with heavy sub drop
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(this.m2h(note), time);
+    osc.frequency.setValueAtTime(pitch, time);
+    osc.frequency.exponentialRampToValueAtTime(32, time + 0.18);
 
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1200, time);
-    filter.frequency.exponentialRampToValueAtTime(400, time + 0.25);
+    gain.gain.setValueAtTime(0.38, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
 
-    gain.gain.setValueAtTime(0, time);
-    gain.gain.linearRampToValueAtTime(0.08, time + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
-
-    osc.connect(filter);
-    filter.connect(gain);
+    osc.connect(gain);
     gain.connect(this.masterGain);
 
     osc.start(time);
-    osc.stop(time + 0.3);
+    osc.stop(time + decay + 0.05);
+  }
 
-    // Warm Ambient Sub-Bass every 4 steps
-    if (step % 4 === 0) {
-      const bOsc = this.ctx.createOscillator();
-      const bGain = this.ctx.createGain();
-      bOsc.type = 'triangle';
-      bOsc.frequency.setValueAtTime(this.m2h(bassNote), time);
+  private playHiHat(time: number, isOpen = false, volume = 0.07) {
+    if (!this.ctx || !this.masterGain || !this.noiseBuffer) return;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.noiseBuffer;
 
-      bGain.gain.setValueAtTime(0, time);
-      bGain.gain.linearRampToValueAtTime(0.12, time + 0.05);
-      bGain.gain.exponentialRampToValueAtTime(0.001, time + 0.8);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(6500, time);
 
-      bOsc.connect(bGain);
-      bGain.connect(this.masterGain);
+    const gain = this.ctx.createGain();
+    const decay = isOpen ? 0.22 : 0.05;
 
-      bOsc.start(time);
-      bOsc.stop(time + 0.85);
+    gain.gain.setValueAtTime(volume, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + decay);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    noise.start(time);
+    noise.stop(time + decay + 0.01);
+  }
+
+  private playSnare(time: number, isGhost = false) {
+    if (!this.ctx || !this.masterGain || !this.noiseBuffer) return;
+
+    const volumeScale = isGhost ? 0.04 : 0.16;
+
+    // Tonal body (Snare drum wood resonance)
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(175, time);
+    osc.frequency.exponentialRampToValueAtTime(75, time + 0.12);
+    oscGain.gain.setValueAtTime(volumeScale, time);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+    osc.connect(oscGain);
+    oscGain.connect(this.masterGain);
+    osc.start(time);
+    osc.stop(time + 0.15);
+
+    // Underground Crackle / Snare Wires Noise
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = this.noiseBuffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1800, time);
+    filter.Q.setValueAtTime(1.2, time);
+
+    const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(volumeScale * 1.1, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterGain);
+
+    noise.start(time);
+    noise.stop(time + 0.24);
+  }
+
+  // Deep Underground Bass Chord Stabs (Sub + Minor Chords)
+  private playUndergroundBassChord(time: number, midiRoot: number, isMinor = true, duration = 0.6, volume = 0.1) {
+    if (!this.ctx || !this.masterGain) return;
+
+    // Chord intervals: Root, Minor/Major 3rd (+3/+4), 5th (+7), Minor 7th (+10)
+    const intervals = isMinor ? [0, 3, 7, 10] : [0, 4, 7, 10];
+
+    // 1. Deep Sub-Bass (1 octave below root)
+    const subOsc = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(this.m2h(midiRoot - 12), time);
+    subOsc.frequency.exponentialRampToValueAtTime(this.m2h(midiRoot - 12) * 0.98, time + duration);
+
+    subGain.gain.setValueAtTime(0, time);
+    subGain.gain.linearRampToValueAtTime(0.24, time + 0.02);
+    subGain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+    subOsc.connect(subGain);
+    subGain.connect(this.masterGain);
+
+    subOsc.start(time);
+    subOsc.stop(time + duration + 0.05);
+
+    // 2. Warm Vinyl Underground Chord Stabs (Triangle + Lowpass Filtered Sawtooth)
+    intervals.forEach((interval, idx) => {
+      if (!this.ctx || !this.masterGain) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = idx === 0 ? 'triangle' : 'sawtooth';
+      osc.frequency.setValueAtTime(this.m2h(midiRoot + interval), time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(750, time);
+      filter.frequency.exponentialRampToValueAtTime(220, time + duration);
+
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(volume / (idx === 0 ? 1 : 1.8), time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(time);
+      osc.stop(time + duration + 0.05);
+    });
+  }
+
+  // ==========================================
+  // UNDERGROUND SILICON VALLEY TECH RAP BEATS
+  // ==========================================
+
+  // Stage 1: "Preludio Silicon Valley" - Laid-Back Underground Lo-Fi Rap Beat (~86 BPM)
+  private playSiliconValleyStory(step: number, time: number) {
+    if (!this.ctx || !this.masterGain) return;
+
+    // Underground Boom-Bap Kick Pattern
+    if (step === 0 || step === 7 || step === 10) {
+      this.play808Kick(time, 130, 0.6);
+    }
+    // Heavy Snare / Clap
+    if (step === 4 || step === 12) {
+      this.playSnare(time);
+    } else if (step === 15) {
+      this.playSnare(time, true); // Ghost snare
+    }
+    // Swung Hi-Hats
+    this.playHiHat(time, step === 6 || step === 14, step % 2 === 0 ? 0.07 : 0.035);
+
+    // Deep Underground Minor Chord Stabs on beats 0, 4, 8, 12
+    if (step === 0) {
+      this.playUndergroundBassChord(time, 48, true, 1.2, 0.12); // C minor 7
+    } else if (step === 4) {
+      this.playUndergroundBassChord(time, 44, true, 1.0, 0.11); // Ab minor 7
+    } else if (step === 8) {
+      this.playUndergroundBassChord(time, 41, true, 1.2, 0.12); // F minor 7
+    } else if (step === 12) {
+      this.playUndergroundBassChord(time, 43, false, 1.0, 0.11); // G7 chord
+    }
+
+    // Smooth Vinyl Lead Melody (Subtle synth hook)
+    const melody = [60, 0, 63, 67, 0, 65, 63, 60, 0, 67, 70, 67, 65, 0, 63, 62];
+    const note = melody[step % melody.length];
+
+    if (note > 0) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(this.m2h(note - 1), time);
+      osc.frequency.exponentialRampToValueAtTime(this.m2h(note), time + 0.08); // Slight pitch bend
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1100, time);
+      filter.frequency.exponentialRampToValueAtTime(450, time + 0.3);
+
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.08, time + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.32);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(time);
+      osc.stop(time + 0.35);
     }
   }
 
-  // Track 2: Mentor / Compañía - "Tema de Reclutamiento & Estrategia"
-  // Upbeat, motivational video game melody in Eb / F Minor (105 BPM)
-  private playMentorNote(step: number, time: number) {
+  // Stage 2: "Pied Piper Cypher" - Deep West Coast Underground Rap Beat (~88 BPM)
+  private playSiliconValleyMentor(step: number, time: number) {
     if (!this.ctx || !this.masterGain) return;
 
-    // 16-step uplifting synth pulse sequence
-    const melody = [60, 63, 67, 72, 67, 70, 75, 72, 63, 67, 72, 75, 79, 75, 72, 67];
-    const bass = [39, 39, 43, 43, 41, 41, 46, 46, 39, 39, 43, 43, 41, 41, 46, 46];
+    // Underground West Coast Heavy Kicks
+    if (step === 0 || step === 3 || step === 8 || step === 10) {
+      this.play808Kick(time, 145, 0.65);
+    }
+    // Underground Snare
+    if (step === 4 || step === 12) {
+      this.playSnare(time);
+    }
+    // Rolling Underground Hi-Hats
+    const isHatRoll = step >= 12;
+    this.playHiHat(time, step === 6 || step === 14, isHatRoll ? 0.08 : 0.05);
 
-    const note = melody[step % melody.length];
-    const bassNote = bass[step % bass.length];
+    // Deep Heavy Bass Chords
+    if (step === 0) {
+      this.playUndergroundBassChord(time, 46, true, 1.1, 0.13); // Bb minor 7
+    } else if (step === 6) {
+      this.playUndergroundBassChord(time, 43, true, 0.9, 0.12); // G minor 7
+    } else if (step === 8) {
+      this.playUndergroundBassChord(time, 48, true, 1.1, 0.13); // C minor 7
+    } else if (step === 14) {
+      this.playUndergroundBassChord(time, 50, true, 0.8, 0.12); // D minor 7
+    }
 
-    // Chiptune Square Wave Pulse
+    // Underground Synth Hook
+    const riff = [58, 61, 63, 65, 0, 68, 65, 63, 58, 61, 63, 70, 68, 65, 63, 61];
+    const currentNote = riff[step % riff.length];
+
+    if (currentNote > 0) {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(this.m2h(currentNote), time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1600, time);
+      filter.frequency.exponentialRampToValueAtTime(550, time + 0.25);
+
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.09, time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(time);
+      osc.stop(time + 0.3);
+    }
+  }
+
+  // Stage 3: "AGI Raid Boss" - Dark Heavy Underground Trap / Rap Beat (~92 BPM)
+  private playSiliconValleyChallenge(step: number, time: number) {
+    if (!this.ctx || !this.masterGain) return;
+
+    // Dark Heavy Sub-Bass 808 Kicks
+    if (step === 0 || step === 3 || step === 6 || step === 8 || step === 11 || step === 14) {
+      this.play808Kick(time, 150, 0.5);
+    }
+    // Hard Underground Snare
+    if (step === 4 || step === 12) {
+      this.playSnare(time);
+    }
+    this.playHiHat(time, step % 2 === 1, 0.07);
+
+    // Dark Minor 9th Bass Chords
+    if (step === 0) {
+      this.playUndergroundBassChord(time, 40, true, 1.0, 0.14); // E minor 9
+    } else if (step === 8) {
+      this.playUndergroundBassChord(time, 43, true, 1.0, 0.14); // G minor 9
+    }
+
+    // Aggressive Dark Underground Synth Lead
+    const leadSequence = [64, 67, 69, 72, 74, 72, 69, 67, 64, 69, 74, 76, 79, 76, 74, 69];
+    const note = leadSequence[step % leadSequence.length];
+
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
 
-    osc.type = 'square';
+    osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(this.m2h(note), time);
 
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(1800, time);
-    filter.frequency.exponentialRampToValueAtTime(600, time + 0.2);
+    filter.frequency.setValueAtTime(2100, time);
+    filter.frequency.exponentialRampToValueAtTime(700, time + 0.2);
 
     gain.gain.setValueAtTime(0, time);
-    gain.gain.linearRampToValueAtTime(0.06, time + 0.01);
+    gain.gain.linearRampToValueAtTime(0.1, time + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
 
     osc.connect(filter);
@@ -120,77 +340,65 @@ class GameAudioEngine {
     gain.connect(this.masterGain);
 
     osc.start(time);
-    osc.stop(time + 0.23);
-
-    // Driving Bass Synth
-    if (step % 2 === 0) {
-      const bOsc = this.ctx.createOscillator();
-      const bGain = this.ctx.createGain();
-      bOsc.type = 'sawtooth';
-      bOsc.frequency.setValueAtTime(this.m2h(bassNote), time);
-
-      bGain.gain.setValueAtTime(0, time);
-      bGain.gain.linearRampToValueAtTime(0.09, time + 0.02);
-      bGain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
-
-      bOsc.connect(bGain);
-      bGain.connect(this.masterGain);
-
-      bOsc.start(time);
-      bOsc.stop(time + 0.38);
-    }
+    osc.stop(time + 0.25);
   }
 
-  // Track 3: Model & Challenge - "Invocación AGI & Misión Principal"
-  // Energetic 124 BPM synthwave / 16-bit video game combat & coding track in G Minor
-  private playChallengeNote(step: number, time: number) {
+  // ==========================================
+  // RETRO CHIPTUNE BEATS
+  // ==========================================
+
+  private playStoryNote(step: number, time: number) {
     if (!this.ctx || !this.masterGain) return;
-
-    // 16-step high-intensity cyber sequence
-    const melody = [67, 70, 74, 79, 82, 79, 74, 70, 67, 72, 75, 79, 84, 79, 75, 72];
-    const bass = [31, 31, 31, 31, 34, 34, 34, 34, 36, 36, 36, 36, 38, 38, 38, 38];
-
+    const melody = [48, 55, 60, 63, 67, 70, 72, 75, 48, 55, 60, 63, 67, 70, 72, 67];
     const note = melody[step % melody.length];
-    const bassNote = bass[step % bass.length];
 
-    // High Energy Lead Synth
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    const filter = this.ctx.createBiquadFilter();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(this.m2h(note), time);
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(0.08, time + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(time);
+    osc.stop(time + 0.3);
+  }
 
+  private playMentorNote(step: number, time: number) {
+    if (!this.ctx || !this.masterGain) return;
+    const melody = [60, 63, 67, 72, 67, 70, 75, 72, 63, 67, 72, 75, 79, 75, 72, 67];
+    const note = melody[step % melody.length];
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(this.m2h(note), time);
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(0.06, time + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(time);
+    osc.stop(time + 0.23);
+  }
+
+  private playChallengeNote(step: number, time: number) {
+    if (!this.ctx || !this.masterGain) return;
+    const melody = [67, 70, 74, 79, 82, 79, 74, 70, 67, 72, 75, 79, 84, 79, 75, 72];
+    const note = melody[step % melody.length];
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
     osc.type = step % 4 === 0 ? 'sawtooth' : 'triangle';
     osc.frequency.setValueAtTime(this.m2h(note), time);
-
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(2400, time);
-    filter.frequency.exponentialRampToValueAtTime(800, time + 0.18);
-
     gain.gain.setValueAtTime(0, time);
     gain.gain.linearRampToValueAtTime(0.07, time + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
-
-    osc.connect(filter);
-    filter.connect(gain);
+    osc.connect(gain);
     gain.connect(this.masterGain);
-
     osc.start(time);
     osc.stop(time + 0.2);
-
-    // 16th Note Driving Synth Bassline
-    const bOsc = this.ctx.createOscillator();
-    const bGain = this.ctx.createGain();
-    bOsc.type = 'sawtooth';
-    bOsc.frequency.setValueAtTime(this.m2h(bassNote), time);
-
-    bGain.gain.setValueAtTime(0, time);
-    bGain.gain.linearRampToValueAtTime(0.08, time + 0.01);
-    bGain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
-
-    bOsc.connect(bGain);
-    bGain.connect(this.masterGain);
-
-    bOsc.start(time);
-    bOsc.stop(time + 0.18);
   }
 
   // Audio Sequencer Loop
@@ -201,21 +409,33 @@ class GameAudioEngine {
 
     const now = this.ctx.currentTime;
 
-    // Tempo configuration for each track level
-    let intervalMs = 280; // ~107 BPM default
-    if (this.currentTrack === 'story') {
-      intervalMs = 320; // ~93 BPM (calm prelude)
-      this.playStoryNote(this.currentNoteIndex, now);
-    } else if (this.currentTrack === 'character') {
-      intervalMs = 260; // ~115 BPM (upbeat strategic)
-      this.playMentorNote(this.currentNoteIndex, now);
-    } else if (this.currentTrack === 'model') {
-      intervalMs = 200; // ~150 BPM 16th feel (high energy battle)
-      this.playChallengeNote(this.currentNoteIndex, now);
+    let intervalMs = 320;
+
+    if (this.currentStyle === 'silicon_valley') {
+      if (this.currentTrack === 'story') {
+        intervalMs = 345; // ~87 BPM laid-back underground rap
+        this.playSiliconValleyStory(this.currentNoteIndex, now);
+      } else if (this.currentTrack === 'character') {
+        intervalMs = 330; // ~91 BPM West Coast underground cypher
+        this.playSiliconValleyMentor(this.currentNoteIndex, now);
+      } else if (this.currentTrack === 'model') {
+        intervalMs = 310; // ~96 BPM underground AGI raid beat
+        this.playSiliconValleyChallenge(this.currentNoteIndex, now);
+      }
+    } else {
+      if (this.currentTrack === 'story') {
+        intervalMs = 320;
+        this.playStoryNote(this.currentNoteIndex, now);
+      } else if (this.currentTrack === 'character') {
+        intervalMs = 260;
+        this.playMentorNote(this.currentNoteIndex, now);
+      } else if (this.currentTrack === 'model') {
+        intervalMs = 200;
+        this.playChallengeNote(this.currentNoteIndex, now);
+      }
     }
 
     this.currentNoteIndex++;
-
     this.timerId = window.setTimeout(this.tick, intervalMs);
   };
 
@@ -235,6 +455,15 @@ class GameAudioEngine {
     if (track !== 'off' && !this.isMutedState) {
       this.tick();
     }
+  }
+
+  public setStyle(style: BgmStyle) {
+    this.currentStyle = style;
+    this.currentNoteIndex = 0;
+  }
+
+  public getStyle(): BgmStyle {
+    return this.currentStyle;
   }
 
   public toggleMute(): boolean {
@@ -317,3 +546,4 @@ export const playSoundEffect = (type: 'hover' | 'click' | 'launch') => {
     // Audio context user gesture block or browser limitation
   }
 };
+

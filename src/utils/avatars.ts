@@ -5,7 +5,7 @@ export const OFFICIAL_LEADER_PHOTOS: Record<string, string> = {
   'demis-hassabis': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Demis_Hassabis_Royal_Society.jpg/800px-Demis_Hassabis_Royal_Society.jpg',
   'jensen-huang': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Jensen_Huang_Computex_2023_%28cropped%29.jpg/800px-Jensen_Huang_Computex_2023_%28cropped%29.jpg',
   'elon-musk': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg/800px-Elon_Musk_Royal_Society_%28crop2%29.jpg',
-  'satya-nadella': 'https://upload.wikimedia.org/wikipedia/commons/1/18/Satya_Nadella_2017.jpg',
+  'satya-nadella': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/MS-Satya-Nadella-2017-05-18.jpg/800px-MS-Satya-Nadella-2017-05-18.jpg',
   'yann-lecun': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Yann_LeCun_in_2018.jpg/800px-Yann_LeCun_in_2018.jpg',
   'andrew-ng': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Andrew_Ng_at_the_Global_Artificial_Intelligence_Summit_2020.jpg/800px-Andrew_Ng_at_the_Global_Artificial_Intelligence_Summit_2020.jpg',
   'geoffrey-hinton': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Geoffrey_Hinton_in_2018.jpg/800px-Geoffrey_Hinton_in_2018.jpg'
@@ -37,10 +37,10 @@ export const LEADER_AVATARS: Record<string, Record<AvatarStyle, string>> = {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Elon_Musk_Royal_Society_%28crop2%29.jpg/800px-Elon_Musk_Royal_Society_%28crop2%29.jpg'
   },
   'satya-nadella': {
-    comic: 'https://api.dicebear.com/9.x/avataaars/svg?seed=SatyaNadellaMale&skinColor=d08b5b&top=noHair&facialHairProbability=0&accessories=prescription01&accessoriesProbability=100&clothing=collarAndSweater&clothesColor=00a4ef',
-    pixel: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=SatyaNadellaPixelMale&skinColor=d08b5b&backgroundColor=00a4ef',
+    comic: 'https://api.dicebear.com/9.x/avataaars/svg?seed=SatyaNadellaComic&skinColor=edb98a&top=shortFlat&hairColor=1a1a1a&facialHairProbability=0&accessories=prescription01&accessoriesProbability=100&clothing=collarAndSweater&clothesColor=00a4ef',
+    pixel: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=SatyaNadellaPixel&skinColor=edb98a&backgroundColor=00a4ef',
     anime: 'https://api.dicebear.com/9.x/adventurer/svg?seed=SatyaNadellaAnime&skinColor=edb98a&hair=short04&hairColor=1a1a1a&backgroundColor=00a4ef',
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Satya_Nadella_2017.jpg'
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/MS-Satya-Nadella-2017-05-18.jpg/800px-MS-Satya-Nadella-2017-05-18.jpg'
   },
   'yann-lecun': {
     comic: 'https://api.dicebear.com/9.x/avataaars/svg?seed=YannLeCunComic&skinColor=ffdbac&top=shortFlat&hairColor=2c1b18&facialHairProbability=0&accessories=prescription02&accessoriesProbability=100&clothing=blazerAndSweater',

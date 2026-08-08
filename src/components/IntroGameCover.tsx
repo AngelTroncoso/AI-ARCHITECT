@@ -265,15 +265,32 @@ export const IntroGameCover: React.FC<IntroGameCoverProps> = ({
                 {step === 'character' && '🎵 PISTA 2: RECLUTAMIENTO (MENTOR)'}
                 {step === 'model' && '🎵 PISTA 3: DESAFÍO AGI (MODELO)'}
               </span>
-              <span className="text-[8px] text-slate-400 font-mono">BGM SINTETIZADO GAME 8-BIT</span>
+              <span className="text-[8px] text-amber-300 font-mono">
+                {gameAudioEngine.getStyle() === 'silicon_valley' ? '🔥 SILICON VALLEY RAP BEAT' : '👾 BGM CHIPTUNE 8-BIT'}
+              </span>
             </div>
             {soundEnabled && (
               <div className="flex items-end space-x-0.5 h-3 px-1">
-                <span className="w-0.5 h-3 bg-cyan-400 animate-pulse"></span>
-                <span className="w-0.5 h-2 bg-cyan-400 animate-pulse delay-75"></span>
-                <span className="w-0.5 h-3.5 bg-cyan-400 animate-pulse delay-150"></span>
+                <span className="w-0.5 h-3 bg-amber-400 animate-pulse"></span>
+                <span className="w-0.5 h-2 bg-amber-400 animate-pulse delay-75"></span>
+                <span className="w-0.5 h-3.5 bg-amber-400 animate-pulse delay-150"></span>
               </div>
             )}
+            <button
+              onClick={() => {
+                const current = gameAudioEngine.getStyle();
+                const nextStyle = current === 'silicon_valley' ? 'chiptune' : 'silicon_valley';
+                gameAudioEngine.setStyle(nextStyle);
+                if (!soundEnabled) {
+                  gameAudioEngine.toggleMute();
+                  setSoundEnabled(true);
+                }
+              }}
+              className="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-[9px] font-mono font-bold text-amber-300 transition-colors cursor-pointer"
+              title="Cambiar estilo de música: Silicon Valley Rap Beat vs 8-Bit Chiptune"
+            >
+              {gameAudioEngine.getStyle() === 'silicon_valley' ? '🔥 Rap SV' : '👾 8-Bit'}
+            </button>
             <button
               onClick={() => {
                 const isMuted = gameAudioEngine.toggleMute();
@@ -285,6 +302,7 @@ export const IntroGameCover: React.FC<IntroGameCoverProps> = ({
               {soundEnabled ? <Volume2 className="w-4 h-4 text-cyan-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
             </button>
           </div>
+
 
           <button
             onClick={onClose}

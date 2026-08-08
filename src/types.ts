@@ -27,6 +27,16 @@ export interface HFModel {
   type: 'pequeño' | 'optimizado' | 'intermedio' | 'avanzado';
   baseMetrics: ModelMetrics;
   description: Record<Language, string>;
+  algorithmCode?: string;
+  architectureDetails?: {
+    attentionType: string;
+    activationFunc: string;
+    contextWindow: number;
+    layers: number;
+    heads: number;
+    quantizationSupport: string[];
+    mathFormula: string;
+  };
 }
 
 export interface ModelMetrics {
@@ -116,6 +126,10 @@ export interface UserProgress {
   unlockedAchievements?: string[];
   themeMode?: 'cyberpunk' | 'crt' | 'matrix' | 'clean';
   bossHp?: number;
+  githubUser?: string;
+  githubRepo?: string;
+  githubSyncedCount?: number;
+  stageBurnedLevel?: number;
 }
 
 export interface SkillTreeNode {

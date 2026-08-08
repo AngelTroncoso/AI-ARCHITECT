@@ -28,6 +28,10 @@ import { ModelArenaModal } from './components/ModelArenaModal';
 import { LoRAPlaygroundModal } from './components/LoRAPlaygroundModal';
 import { AchievementsModal } from './components/AchievementsModal';
 import { RoadmapHubModal } from './components/RoadmapHubModal';
+import { GoogleAiHubModal } from './components/GoogleAiHubModal';
+import { ModelAlgorithmRoomModal } from './components/ModelAlgorithmRoomModal';
+import { GitHubExportModal } from './components/GitHubExportModal';
+import { YouthGuideModal } from './components/YouthGuideModal';
 import { GpuMonitorHud } from './components/GpuMonitorHud';
 
 export default function App() {
@@ -90,6 +94,10 @@ export default function App() {
   const [showLoRAModal, setShowLoRAModal] = useState<boolean>(false);
   const [showAchievementsModal, setShowAchievementsModal] = useState<boolean>(false);
   const [showRoadmapHubModal, setShowRoadmapHubModal] = useState<boolean>(false);
+  const [showGoogleAiModal, setShowGoogleAiModal] = useState<boolean>(false);
+  const [showAlgorithmRoomModal, setShowAlgorithmRoomModal] = useState<boolean>(false);
+  const [showGitHubModal, setShowGitHubModal] = useState<boolean>(false);
+  const [showYouthGuideModal, setShowYouthGuideModal] = useState<boolean>(false);
 
   // Skill Tree Unlock Handler
   const handleUnlockSkill = (skillId: string, cost: number) => {
@@ -308,6 +316,10 @@ export default function App() {
         onOpenSkillTree={() => setShowSkillTreeModal(true)}
         onOpenBossRaid={() => setShowBossRaidModal(true)}
         onOpenRoadmapHub={() => setShowRoadmapHubModal(true)}
+        onOpenGoogleAiHub={() => setShowGoogleAiModal(true)}
+        onOpenModelAlgorithmRoom={() => setShowAlgorithmRoomModal(true)}
+        onOpenGitHubExport={() => setShowGitHubModal(true)}
+        onOpenYouthGuide={() => setShowYouthGuideModal(true)}
         onSelectLanguage={(lang) => setProgress((p) => ({ ...p, activeLanguage: lang }))}
         onSelectLevel={(lvl) => setProgress((p) => ({ ...p, currentChallengeId: lvl }))}
       />
@@ -380,6 +392,7 @@ export default function App() {
           mentor={activeMentor}
           userLang={progress.activeLanguage}
           onSelectModel={(model) => setProgress((p) => ({ ...p, selectedModelId: model.id }))}
+          onOpenAlgorithmRoom={() => setShowAlgorithmRoomModal(true)}
           onClose={() => setShowModelModal(false)}
         />
       )}
@@ -449,6 +462,42 @@ export default function App() {
         onOpenModelArena={() => setShowModelArenaModal(true)}
         onOpenLoRA={() => setShowLoRAModal(true)}
         onOpenAchievements={() => setShowAchievementsModal(true)}
+      />
+
+      <GoogleAiHubModal
+        isOpen={showGoogleAiModal}
+        onClose={() => setShowGoogleAiModal(false)}
+        mentor={activeMentor}
+        challenge={currentChallenge}
+        code={code}
+        userLang={progress.activeLanguage}
+      />
+
+      <ModelAlgorithmRoomModal
+        isOpen={showAlgorithmRoomModal}
+        onClose={() => setShowAlgorithmRoomModal(false)}
+        model={activeModel}
+        userLang={progress.activeLanguage}
+        onLoadCodeToEditor={(newCode) => setCode(newCode)}
+      />
+
+      <GitHubExportModal
+        isOpen={showGitHubModal}
+        onClose={() => setShowGitHubModal(false)}
+        model={activeModel}
+        challenge={currentChallenge}
+        code={code}
+        progress={progress}
+        onUpdateProgress={(updater) => setProgress(updater)}
+      />
+
+      <YouthGuideModal
+        isOpen={showYouthGuideModal}
+        onClose={() => setShowYouthGuideModal(false)}
+        onOpenAlgorithmRoom={() => setShowAlgorithmRoomModal(true)}
+        onOpenSkillTree={() => setShowSkillTreeModal(true)}
+        onOpenGitHubExport={() => setShowGitHubModal(true)}
+        onOpenRoadmapHub={() => setShowRoadmapHubModal(true)}
       />
 
       {/* Intro Portada Video Game Full-Screen Opening Cover */}

@@ -1,13 +1,14 @@
 import React from 'react';
 import { HFModel, MentorCharacter, Language } from '../types';
 import { TRANSLATIONS } from '../data/i18n';
-import { X, Check, Code2, Zap, HardDrive, DollarSign } from 'lucide-react';
+import { X, Check, Code2, Zap, HardDrive, DollarSign, Sliders } from 'lucide-react';
 
 interface ModelSelectorProps {
   activeModelId: string;
   mentor: MentorCharacter;
   userLang: Language;
   onSelectModel: (model: HFModel) => void;
+  onOpenAlgorithmRoom?: (model: HFModel) => void;
   onClose: () => void;
 }
 
@@ -16,6 +17,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
   mentor,
   userLang,
   onSelectModel,
+  onOpenAlgorithmRoom,
   onClose,
 }) => {
   const t = TRANSLATIONS[userLang];
@@ -114,6 +116,25 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Room de Análisis de Algoritmo Trigger */}
+                {onOpenAlgorithmRoom && (
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectModel(model);
+                        onOpenAlgorithmRoom(model);
+                        onClose();
+                      }}
+                      className="flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-purple-900 to-indigo-900 hover:from-purple-800 hover:to-indigo-800 text-purple-200 rounded-lg text-xs font-mono font-bold transition-all border border-purple-500/30 cursor-pointer"
+                    >
+                      <Sliders className="w-3.5 h-3.5 text-purple-300" />
+                      <span>Entrar al Room de Análisis del Algoritmo</span>
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

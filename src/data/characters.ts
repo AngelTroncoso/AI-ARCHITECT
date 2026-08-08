@@ -350,7 +350,7 @@ export const CHARACTERS: MentorCharacter[] = [
     name: 'Satya Nadella',
     company: 'Microsoft',
     role: 'CEO',
-    avatar: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Satya_Nadella_2017.jpg',
+    avatar: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/MS-Satya-Nadella-2017-05-18.jpg/800px-MS-Satya-Nadella-2017-05-18.jpg',
     color: '#00a4ef',
     voiceName: 'Zephyr',
     greeting: {

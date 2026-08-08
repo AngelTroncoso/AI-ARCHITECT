@@ -18,6 +18,10 @@ interface HeaderProps {
   onOpenSkillTree?: () => void;
   onOpenBossRaid?: () => void;
   onOpenRoadmapHub?: () => void;
+  onOpenGoogleAiHub?: () => void;
+  onOpenModelAlgorithmRoom?: () => void;
+  onOpenGitHubExport?: () => void;
+  onOpenYouthGuide?: () => void;
   onSelectLanguage: (lang: Language) => void;
   onSelectLevel: (levelId: number) => void;
 }
@@ -34,6 +38,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSkillTree,
   onOpenBossRaid,
   onOpenRoadmapHub,
+  onOpenGoogleAiHub,
+  onOpenModelAlgorithmRoom,
+  onOpenGitHubExport,
+  onOpenYouthGuide,
   onSelectLanguage,
   onSelectLevel,
 }) => {
@@ -80,8 +88,19 @@ export const Header: React.FC<HeaderProps> = ({
                 title="Ver Historia & Portada Misión"
               >
                 <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse" />
-                <span>Portada Misión</span>
+                <span>Portada</span>
               </button>
+
+              {onOpenYouthGuide && (
+                <button
+                  onClick={onOpenYouthGuide}
+                  className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/40 text-[10px] font-bold uppercase transition-all cursor-pointer shadow-sm"
+                  title="Guía Educativa de Actividades, Recursos, Puntos y Botones para Estudiantes (15+ años)"
+                >
+                  <Award className="w-3 h-3 text-amber-400" />
+                  <span>Guía (15+ Años)</span>
+                </button>
+              )}
             </div>
             <p className="text-[11px] text-slate-400 font-medium tracking-wide mt-0.5">
               {t.subtitle} {progress.username ? `• Arquitecto: ${progress.username}` : ''}
@@ -173,6 +192,30 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="font-mono text-cyan-300">{activeModel.name}</span>
           </button>
 
+          {/* Model Algorithm Room Button */}
+          {onOpenModelAlgorithmRoom && (
+            <button
+              onClick={onOpenModelAlgorithmRoom}
+              className="flex items-center space-x-1 bg-gradient-to-r from-purple-900 to-indigo-900 hover:from-purple-800 hover:to-indigo-800 text-purple-200 border border-purple-500/40 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer shadow-md"
+              title="Abrir Room de Análisis del Algoritmo del Modelo"
+            >
+              <Sliders className="w-4 h-4 text-purple-300 animate-pulse" />
+              <span className="hidden lg:inline">Room Algoritmo</span>
+            </button>
+          )}
+
+          {/* GitHub Sync & Portfolio Export Button */}
+          {onOpenGitHubExport && (
+            <button
+              onClick={onOpenGitHubExport}
+              className="flex items-center space-x-1 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer"
+              title="Publicar Avance en GitHub"
+            >
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <span className="hidden xl:inline">GitHub Sync</span>
+            </button>
+          )}
+
           {/* Skill Tree Button */}
           {onOpenSkillTree && (
             <button
@@ -197,7 +240,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* Roadmap 21 Improvements Hub Button */}
+          {/* Roadmap 21 Mejoras Hub Button */}
           {onOpenRoadmapHub && (
             <button
               onClick={onOpenRoadmapHub}
@@ -209,8 +252,23 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-          {/* BGM Video Game Music Control */}
+          {/* BGM Video Game / Silicon Valley Rap Music Control */}
           <div className="flex items-center space-x-1 bg-[#12151E] p-1 rounded-lg border border-cyan-500/30">
+            <button
+              onClick={() => {
+                const current = gameAudioEngine.getStyle();
+                const nextStyle = current === 'silicon_valley' ? 'chiptune' : 'silicon_valley';
+                gameAudioEngine.setStyle(nextStyle);
+                if (bgmMuted) {
+                  gameAudioEngine.toggleMute();
+                  setBgmMuted(false);
+                }
+              }}
+              className="px-2 py-1 bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/50 hover:to-amber-500/40 border border-amber-500/40 rounded text-[10px] font-mono font-bold text-amber-300 transition-colors cursor-pointer"
+              title="Cambiar Estilo de Música: Silicon Valley Rap Beat vs 8-Bit Chiptune"
+            >
+              <span>{gameAudioEngine.getStyle() === 'silicon_valley' ? '🔥 Rap SV' : '👾 8-Bit'}</span>
+            </button>
             <button
               onClick={handleCycleTrack}
               className="flex items-center space-x-1.5 px-2 py-1 bg-slate-900 hover:bg-slate-800 rounded text-[10px] font-mono font-bold text-cyan-300 transition-colors cursor-pointer"
@@ -231,6 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
               {!bgmMuted ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
             </button>
           </div>
+
 
           {/* Video Lesson Button */}
           <button
